@@ -81,6 +81,7 @@ image(fig_main_pictureData, 'Parent', handles.axes_Sch1);
 set(handles.axes_Sch1, 'XTick', []);
 set(handles.axes_Sch1, 'YTick', []);
 
+set(handles.pb_Track, 'Enable', 'on');
 % Set widget's function
 for i = 1:5
     for j = 1:5
