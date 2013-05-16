@@ -12,7 +12,7 @@ addpath([pwd '/func/tracking']); % Functions for tracking algorithm
 addpath([pwd '/func/solve']); % Functions for solving without noise
 addpath([pwd '/func/interface']); % Functions for interface
 
-Tmod = 3.2*60*60;  %[s], duration of the simulation
+Tmod = 1.2*60*60;  %[s], duration of the simulation
 
 % Magic constants
 hF_cont = 0; % Last figure's handles
@@ -31,3 +31,4 @@ end
 resize_arrays; % resize arrays for new Tmod
 
 handle_fig_main = fig_main(); % open GUI form
+load Temp.mat
