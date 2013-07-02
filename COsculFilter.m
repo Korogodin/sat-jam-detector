@@ -234,7 +234,7 @@ classdef COsculFilter < handle
         
         function Estimate(OF, X, V)
             
-            if abs(X) > 0
+            if norm(X) > 0
                 dY = [X; V] - [OF.Xforextr; OF.Vforextr];            
             else
                 dY = [X; V]*0;
@@ -252,15 +252,15 @@ classdef COsculFilter < handle
         function [X, V] = calcXV(OF, e, p, theta, omega, Omega, i0)
             
             if e > 0
-                 theta =  mod_pm_pi(theta);
-                 omega =  mod_pm_pi(omega);
+                 theta =  OF.mod_pm_pi(theta);
+                 omega =  OF.mod_pm_pi(omega);
             else
                  e = -e;
-                 theta =  mod_pm_pi(-theta);
-                 omega =  mod_pm_pi(-omega);
+                 theta =  OF.mod_pm_pi(-theta);
+                 omega =  OF.mod_pm_pi(-omega);
             end
-            Omega =  mod_pm_pi(Omega);
-            i0 = mod_pm_pi(i0);
+            Omega =  OF.mod_pm_pi(Omega);
+            i0 = OF.mod_pm_pi(i0);
             
             %Calc vectors x, y, z and Vx, Vy, Vz for orbital elements
             munapi = sqrt(OF.mu_earth / p);
@@ -269,7 +269,7 @@ classdef COsculFilter < handle
             r = p / (1+e*cos(theta));
             u = theta + omega;
             
-            xyz = U3(-Omega)*U1(-i0)*U3(-u)*[r; 0; 0];
+            xyz = OF.U3(-Omega)*OF.U1(-i0)*OF.U3(-u)*[r; 0; 0];
             
             x = xyz(1);
             y = xyz(2);
@@ -333,45 +333,74 @@ classdef COsculFilter < handle
             OF.Zpred = circshift(OF.Zpred, [0; -1]);            
         end
         
-        function FastInit(OF, X, V)
-            Xs(1) = OF.Xest(5);
-            Xs(2) = OF.Xest(7);
-            Xs(3) = OF.Xest(9);
-            Xs(4) = OF.Xest(11);
-            Xs(5) = OF.Xest(1);
-            Xs(6) = OF.Xest(3)*OF.p_mult;
-          
-            
-            options_solve = optimset('Display','off');  % Turn off display for fsolve
-            Xs = fsolve(@(Xfs)(fsolve_Kepler(Xfs, X(1), X(2), X(3),...
-                V(1), V(2), V(3))), Xs, options_solve);
-            
-            OF.Xest(1) = Xs(5);
-            OF.Xest(3) = Xs(6) / OF.p_mult;
-            OF.Xest(5) = Xs(1);
-            OF.Xest(7) = Xs(2);
-            OF.Xest(9) = Xs(3);
-            OF.Xest(11) = Xs(4);
+        function [X, V] = Osc2Orbit(OF, Osc, K)
+            for k = 1:K
+            end
         end
         
-        function M = U1(x)
+        function Osc = ECI2Oscul(OF, X, V, Osc0)
+            % Osc = [theta; omega; Omega; i; e; p]
+            % X = [x; y; z]
+            % V = [Vx; Vy; Vz]
+            options_solve = optimset('Display','on');  % Turn off display for fsolve
+            options_solve.MaxFunEvals = 60000;
+            options_solve.MaxIter = 40000;
+            Osc = fsolve(@(Xfs)(OF.fsolve_Kepler(Xfs, X(1), X(2), X(3),...
+                V(1), V(2), V(3))), Osc0, options_solve);
+        end
+        
+        function X = Osc2X(OF, Osc, p_mult)
+            % Osc = [theta; omega; Omega; i; e; p]
+            % X = [e; e'; p/p_mult; p'/p_mult; theta; theta'; omega; omega'; Omega; Omega'; i; i'];
+            X = zeros(12, 1);
+            Xs = Osc;
+            X(1) = Xs(5);
+            X(3) = Xs(6) / p_mult;
+            X(5) = Xs(1);
+            X(7) = Xs(2);
+            X(9) = Xs(3);
+            X(11) = Xs(4);
+        end
+        
+        function Osc = X2Osc(OF, X, p_mult)
+            % Osc = [theta; omega; Omega; i; e; p]
+            % X = [e; e'; p/p_mult; p'/p_mult; theta; theta'; omega; omega'; Omega; Omega'; i; i'];
+            Osc = zeros(6,1);
+            Osc(1) = X(5);
+            Osc(2) = X(7);
+            Osc(3) = X(9);
+            Osc(4) = X(11);
+            Osc(5) = X(1);
+            Osc(6) = X(3)*p_mult;
+        end        
+        
+        function FastInit(OF, X, V)
+            % X = [x; y; z]
+            % V = [Vx; Vy; Vz]
+            Osc0 = OF.X2Osc(OF.Xest, OF.p_mult);
+            Osc = OF.ECI2Oscul(X, V, Osc0);
+            OF.Xest = OF.Osc2X(Osc, OF.p_mult);
+        end
+       
+        function M = U1(OF, x)
             M = [1      0       0;
                 0      cos(x)  sin(x);
                 0      -sin(x) cos(x)];
         end
         
-        function M = U3(x)
+      
+        function M = U3(OF, x)
             M = [cos(x)     sin(x)  0;
                 -sin(x)    cos(x)  0;
                 0          0       1];
         end
         
-        function y = mod_pm_pi( x )
+        function y = mod_pm_pi(OF, x )
             %MOD_PM_PI mod [-pi; pi];
             y = mod(x + pi, 2*pi) - pi;
         end
         
-        function Ysolve = fsolve_Kepler(Xs, Xizm, Yizm, Zizm, VXizm, VYizm, VZizm)
+        function Ysolve = fsolve_Kepler(OF, Xs, Xizm, Yizm, Zizm, VXizm, VYizm, VZizm)
             
             %%%%Xsolve = r, u, Omega, i, d_r, d_u
             % Xsolve = theta, omega_p, Omega, i, e, p
@@ -382,15 +411,15 @@ classdef COsculFilter < handle
             e = Xs(5);
             p = Xs(6);
             
-            [x, y, z, Vx, Vy, Vz] = OF.calcXV( e, p, theta, omega_p, Omega, i);
+            [X, V] = OF.calcXV( e, p, theta, omega_p, Omega, i);
             
-            ErrX = Xizm - x;
-            ErrY = Yizm - y;
-            ErrZ = Zizm - z;
+            ErrX = Xizm - X(1);
+            ErrY = Yizm - X(2);
+            ErrZ = Zizm - X(3);
             
-            ErrVx = VXizm - Vx;
-            ErrVy = VYizm - Vy;
-            ErrVz = VZizm - Vz;
+            ErrVx = VXizm - V(1);
+            ErrVy = VYizm - V(2);
+            ErrVz = VZizm - V(3);
             
             Ysolve = [ErrX, ErrY, ErrZ, ErrVx, ErrVy, ErrVz];
             
