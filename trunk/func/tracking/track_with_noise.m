@@ -79,7 +79,7 @@ GDgG = G*Dg*G';
 
 % std_x = 10 / sqrt(dTmod)  ;
 % std_V = 0.01 / sqrt(dTmod);
-
+% std_V = 50;
 Dn = [std_x^2  0         0          0       0       0
       0        std_x^2   0          0       0       0
       0        0         std_x^2    0       0       0
@@ -98,26 +98,92 @@ OF = COsculFilter(T, Xest.X, Dest, p_mult, Dg, Dn, F, G, c);
 global ImitJamAlert
 ImitJamAlert = zeros(1, Nmod);
 dXx = 0;
+
+load LO500.mat
+Ni = 301;
+LO500_r.X = LO500.X(Ni:end);
+LO500_r.Y = LO500.Y(Ni:end);
+LO500_r.Z = LO500.Z(Ni:end);
+LO500_r.VX = LO500.VX(Ni:end);
+LO500_r.VY = LO500.VY(Ni:end);
+LO500_r.VZ = LO500.VZ(Ni:end);
+NLO500 = length(LO500_r.X);
+% 
+
+% OF.Xest =  [0; 0; 6900e3/p_mult; 0; 0; 0; 0; 0; 0; 0; deg2rad(50); 0];
+% Nmod = NLO500;
+
+    x0_izm_old = Xist.x0(1) - (Xist.x0(2) - Xist.x0(1));
+    y0_izm_old = Xist.y0(1) - (Xist.y0(2) - Xist.y0(1));
+    z0_izm_old = Xist.z0(1) - (Xist.z0(2) - Xist.z0(1));
+
+    x0_izm = nan(1, Nmod);
+    y0_izm = nan(1, Nmod);
+    z0_izm = nan(1, Nmod);
+
+    theta_i = nan(1, Nmod);
+    omega_i = nan(1, Nmod);
+    Omega_i = nan(1, Nmod);
+    i_i= nan(1, Nmod);
+    e_i= nan(1, Nmod);
+    p_i= nan(1, Nmod);
+    
 for i = 1:Nmod
     
-    x0_izm = Xist.x0(i) + std_x * randn(1,1);
-    y0_izm = Xist.y0(i) + std_x * randn(1,1);
-    z0_izm = Xist.z0(i) + std_x * randn(1,1);
-    Vx_izm = Xist.d_x0(i) + std_V * randn(1,1);    
-    Vy_izm = Xist.d_y0(i) + std_V * randn(1,1);
-    Vz_izm = Xist.d_z0(i) + std_V * randn(1,1);
+    x0_izm(i) = Xist.x0(i) + std_x * randn(1,1);
+    y0_izm(i) = Xist.y0(i) + std_x * randn(1,1);
+    z0_izm(i) = Xist.z0(i) + std_x * randn(1,1);
+    Vx_izm(i) = Xist.d_x0(i) + std_V * randn(1,1);    
+    Vy_izm(i) = Xist.d_y0(i) + std_V * randn(1,1);
+    Vz_izm(i) = Xist.d_z0(i) + std_V * randn(1,1);
+%     Vx_izm(i) = x0_izm(i) - x0_izm_old;
+%     Vy_izm(i) = y0_izm(i) - y0_izm_old;
+%     Vz_izm(i) = z0_izm(i) - z0_izm_old;
+    
+    x0_izm_old = x0_izm(i);
+    y0_izm_old = y0_izm(i);
+    z0_izm_old = z0_izm(i);
+    
+%     if NLO500 >= i
+%         x0_izm(i) =  LO500_r.X(i);
+%         y0_izm(i) =  LO500_r.Y(i);
+%         z0_izm(i) =  LO500_r.Z(i);
+%         Vx_izm(i) =  LO500_r.VX(i);
+%         Vy_izm(i) =  LO500_r.VY(i);
+%         Vz_izm(i) =  LO500_r.VZ(i);
+%     end
 
     if i == 1
-        OF.FastInit([x0_izm; y0_izm; z0_izm], [Vx_izm; Vy_izm; Vz_izm]);
+        OF.FastInit([x0_izm(i); y0_izm(i); z0_izm(i)], [Vx_izm(i); Vy_izm(i); Vz_izm(i)]);
+        OF.calcXVest;
+        fprintf('Initialization errors:\n');
+        fprintf('\t%.3f m\n', norm([x0_izm(i);y0_izm(i);z0_izm(i)]-OF.Xforest));
+        fprintf('\t%.4f m/s\n', norm([Vx_izm(i);Vy_izm(i);Vz_izm(i)]-OF.Vforest));
+        fprintf('X = %.3f\n', OF.Xforest(1));
+        OF.Xextr = OF.Xest;
+        Osc0 = OF.X2Osc(OF.Xest, OF.p_mult);
     end
     
+    if i>=2
+        Osc = OF.ECI2Oscul([x0_izm(i); y0_izm(i); z0_izm(i)], [Vx_izm(i); Vy_izm(i); Vz_izm(i)], Osc0);
+        Osc0 = Osc;
+        % Osc = [theta; omega; Omega; i; e; p]
+        theta_i(i) = Osc(1);
+        omega_i(i) = Osc(2);
+        Omega_i(i) = Osc(3);
+        i_i(i) = Osc(4);
+        e_i(i) = Osc(5);
+        p_i(i) = Osc(6);
+    end
+            
+    
     OF.Extrapolate();
-    if i > Nmod/2
+    if i > Nmod/2 *3
         dVx = 5;
         dXx = dXx + dVx*T;
-        OF.Estimate([x0_izm+dXx; y0_izm; z0_izm], [Vx_izm+dVx; Vy_izm; Vz_izm]);
+        OF.Estimate([x0_izm(i)+dXx; y0_izm(i); z0_izm(i)], [Vx_izm(i)+dVx; Vy_izm(i); Vz_izm(i)]);
     else
-        OF.Estimate([x0_izm; y0_izm; z0_izm], [Vx_izm; Vy_izm; Vz_izm]);
+        OF.Estimate([x0_izm(i); y0_izm(i); z0_izm(i)], [Vx_izm(i); Vy_izm(i); Vz_izm(i)]);
     end
     OF.Prediction();
     
@@ -161,6 +227,10 @@ for i = 1:Nmod
     end
     drawnow
     pause(0.01);    
+    
+    figure(10)
+    plot(1:length(Xest.x0), Xest.x0, 1:length(x0_izm), x0_izm)
+    drawnow
 end 
 set(handles.txt_Track, 'String', sprintf('%.0f %%', 100));
 
@@ -178,6 +248,7 @@ for i = 1:5
         set(eval(['handles.axes_Track_' num2str(i) num2str(j)]), 'ButtonDownFcn', str2func('@(hObject,eventdata)fig_main(''axes_Track_ButtonDownFcn'',hObject,eventdata,guidata(hObject))'));
     end
 end
+
 plot_axes_Earth(handles, 0);
 draw_Errors(handles);
 

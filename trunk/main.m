@@ -32,3 +32,5 @@ resize_arrays; % resize arrays for new Tmod
 
 handle_fig_main = fig_main(); % open GUI form
 load Temp.mat
+
+% Nmod = length(LO500.X);
