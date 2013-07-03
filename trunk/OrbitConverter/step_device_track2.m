@@ -104,35 +104,35 @@
     end
     
   
-    figure(1)
-    subplot(3,2,1)
-    plot(1:j, e_j(1:j), 1:j, e_f(1:j))
-    ylabel('e');
-    subplot(3,2,2)
-    plot(1:j, p_j(1:j), 1:j, p_f(1:j))
-    ylabel('p');
-    subplot(3,2,3)
-    plot(1:j, theta_j(1:j), 1:j, theta_f(1:j))
-    ylabel('\theta')
-    subplot(3,2,4)
-    plot(1:j, omega_j(1:j), 1:j, omega_f(1:j))
-    ylabel('\omega')
-    subplot(3,2,5)
-    plot(1:j, Omega_j(1:j), 1:j, Omega_f(1:j))
-    ylabel('\Omega')
-    subplot(3,2,6)
-    plot(1:j, i_j(1:j), 1:j, i_f(1:j))
-    ylabel('i');
-    
-    figure(2); 
-    plot((1:j)*T, ImitJamAlert(1:j));
-    xlabel('t, s')
-    ylabel('Alert')
-    
-    figure(3)
-    plot((1:j)*T,  errXestXpred(1:j), (1:j)*T,  errXizmXpred(1:j), (1:j)*T,  errXizmXest(1:j), (1:j)*T,  errXizmXfsolve(1:j), (1:j)*T, RMS(1:j))
-    xlabel('t, s')
-    ylabel('Prediction ans estimation error')
-    legend('EstPred', 'IzmPred', 'IzmEst', 'IzmFsolve', 'RMS');
-    ylim([0 5000]);
-    xlim([0 j*T])
+%     figure(1)
+%     subplot(3,2,1)
+%     plot(1:j, e_j(1:j), 1:j, e_f(1:j))
+%     ylabel('e');
+%     subplot(3,2,2)
+%     plot(1:j, p_j(1:j), 1:j, p_f(1:j))
+%     ylabel('p');
+%     subplot(3,2,3)
+%     plot(1:j, theta_j(1:j), 1:j, theta_f(1:j))
+%     ylabel('\theta')
+%     subplot(3,2,4)
+%     plot(1:j, omega_j(1:j), 1:j, omega_f(1:j))
+%     ylabel('\omega')
+%     subplot(3,2,5)
+%     plot(1:j, Omega_j(1:j), 1:j, Omega_f(1:j))
+%     ylabel('\Omega')
+%     subplot(3,2,6)
+%     plot(1:j, i_j(1:j), 1:j, i_f(1:j))
+%     ylabel('i');
+%     
+%     figure(2); 
+%     plot((1:j)*T, ImitJamAlert(1:j));
+%     xlabel('t, s')
+%     ylabel('Alert')
+%     
+%     figure(3)
+%     plot((1:j)*T,  errXestXpred(1:j), (1:j)*T,  errXizmXpred(1:j), (1:j)*T,  errXizmXest(1:j), (1:j)*T,  errXizmXfsolve(1:j), (1:j)*T, RMS(1:j))
+%     xlabel('t, s')
+%     ylabel('Prediction ans estimation error')
+%     legend('EstPred', 'IzmPred', 'IzmEst', 'IzmFsolve', 'RMS');
+%     ylim([0 5000]);
+%     xlim([0 j*T])

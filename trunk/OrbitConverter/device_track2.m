@@ -44,7 +44,7 @@ while 1
             Solution(k) = NB.Solution;
             TimeofWeek(k) = NB.TimeOfWeek;
             k = k + 1;
-            figure(4); subplot(2,1,1); plot3(X, Y, Z);
+%             figure(4); subplot(2,1,1); plot3(X, Y, Z);
             
             step_device_track2;
             
@@ -54,7 +54,7 @@ while 1
             SNR_GPS_old = SNR_GPS;
             SNR_GPS = NB.SNR_GPS;
             
-            figure(4); subplot(2,1,2); bar(SNR_GPS)
+%             figure(4); subplot(2,1,2); bar(SNR_GPS)
             
             if sum((SNR_GPS - SNR_GPS_oldold) < -2) > 3
                 disp('Wall Jammer!')
