@@ -1,36 +1,29 @@
 try 
-    close(handle_fig_main); % Close old output form
+    close(MW.handle); % Close old output form
+end
+
+global SR
+try
+    clear SR
 end
 
 close all
-clear 
+clear
 clc
 
-globals;
+rng('shuffle'); % Reinit for randn
 
-addpath([pwd '/func/tracking']); % Functions for tracking algorithm
-addpath([pwd '/func/solve']); % Functions for solving without noise
-addpath([pwd '/func/interface']); % Functions for interface
+addpath([pwd '/OrbitConverter']); 
+addpath([pwd '/callback']); % Callbacks for Control Panel
+addpath([pwd '/basic-interface']); % Functions for base interface
+addpath([pwd '/interface']); % Functions for interface
+addpath([pwd '/cnavisbinr']); % Class of NAVIS binary protocol 
 
-Tmod = 1.2*60*60;  %[s], duration of the simulation
-
-% Magic constants
-hF_cont = 0; % Last figure's handles
-Font_Size = 8; % Font size for output interface
-mu_earth = 3.9860044e14; % [m^3/s^2] Gravity constant
-omega_e = 0.7292115e-4; % [rad/s] Earth's rotation rate
-options_solve = optimset('Display','off');  % Turn off display for fsolve
-
-% Load true trajectory of SV
-load TrueTrajectory.mat
-Nmod = fix(Tmod/T);
-if Nmod > Nmod_max
-    Nmod = Nmod_max;
-    Tmod = (Nmod-1)*T;
+MW = CMainWindow('SV GNSS Control');
+if MW.handle == 0
+    clear MW;
+    return;
 end
-resize_arrays; % resize arrays for new Tmod
 
-handle_fig_main = fig_main(); % open GUI form
-load Temp.mat
-
-% Nmod = length(LO500.X);
+global SR
+interface;
