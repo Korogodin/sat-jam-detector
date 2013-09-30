@@ -161,7 +161,7 @@ classdef COsculFilter2 < handle
         end      
         
         function Prediction(OF, Xmeas)
-            if (norm(Xmeas - [OF.Xpred(1); OF.Ypred(1); OF.Zpred(1)]) > 100) && (OF.goodMeasLine > OF.PredLe)
+            if (norm(Xmeas - [OF.Xpred(1); OF.Ypred(1); OF.Zpred(1)]) > 100) && (OF.goodMeasLine > max([OF.PredLe 200])) || norm(Xmeas - OF.Xforest) > 100
                 OF.ImitJamAlert = 1;
             else
                 OF.ImitJamAlert = 0;                

@@ -12,5 +12,9 @@ ylabel(hA, 'Vx, Vy, Vz, m/s');
 xlabel(hA, 'TimeOfWeek, sec');
 grid(hA, 'on');
 
+if SR.TimeOfWeek(end) > SR.beginingTime
+    xlim(hA, [SR.beginingTime/1000 t(end)]);
+end
+
 footer; % DO NOT EDIT
 end

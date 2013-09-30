@@ -43,6 +43,7 @@ while 1
             SR.SNR_GPS_old = SR.SNR_GPS;
             SR.SNR_GPS = NB.SNR_GPS;
             
+         
             if sum((SR.SNR_GPS - SR.SNR_GPS_oldold) < -2) > 3
                 if SR.BarrageTime == -1
                     SR.BarrageTime = SR.TimeOfWeek(SR.k88);
