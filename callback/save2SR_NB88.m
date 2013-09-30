@@ -17,3 +17,11 @@ set(SR.hC_RMS, 'String', ['RMS = ' num2str(NB.RMS) ' m']);
 SR.Solution(SR.k88) = NB.Solution;
 
 SR.TimeOfWeek(SR.k88) = NB.TimeOfWeek;
+
+if (NB.Solution==17)&&(SR.beginingTime == -1)
+    SR.beginingTime = NB.TimeOfWeek;
+    SR.beginingk88 = SR.k88;
+    SR.doFastInit = 1;
+end
+
+

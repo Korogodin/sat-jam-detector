@@ -1,6 +1,6 @@
-    if SR.k88 > 1
-        dTW = SR.TimeOfWeek(SR.k88) - SR.TimeOfWeek(SR.k88-1);
-    end
+if (SR.k88 > SR.beginingk88)&&(SR.beginingk88 ~= -1)
+
+    dTW = SR.TimeOfWeek(SR.k88) - SR.TimeOfWeek(SR.k88-1);
     
     if (SR.RMS(SR.k88) < 10)&&(SR.Solution(SR.k88) == 17)
         OF.goodMeasLine = OF.goodMeasLine + 1;
@@ -28,7 +28,7 @@
     
     if SR.doFastInit
         SR.doFastInit = 0;
-        OF.goodMeasLine = 0;
+        OF.goodMeasLine = 1;
         OF.Xest = [Osc(1); 0; Osc(2) / OF.p_mult; 0; Osc(3); 0; Osc(4); 0; Osc(5); 0; Osc(6); 0];
         OF.calcXVest;
         fprintf('Initialization errors:\n');
@@ -40,14 +40,12 @@
     
     OF.Extrapolate();
     
-    if SR.k88 > 1
-        if (dTW > 1000) && abs(dTW < 10000)
-            for j2 = 1:(fix(round(dTW)/1000) - 1)
-                OF.Xest = OF.Xextr;
-                OF.calcXVest();
-                OF.Prediction(X_measured);
-                OF.Extrapolate();
-            end
+    if (dTW > 1000) && abs(dTW < 10000)
+        for j2 = 1:(fix(round(dTW)/1000) - 1)
+            OF.Xest = OF.Xextr;
+            OF.calcXVest();
+            OF.Prediction(X_measured);
+            OF.Extrapolate();
         end
     end
     
@@ -56,7 +54,6 @@
     else
         OF.Xest = OF.Xextr;
         OF.calcXVest();
-        OF.Prediction(X_measured);
     end
     
     SR.x_estimated(SR.k88) = OF.Xforest(1);
@@ -86,7 +83,7 @@
     SR.Omega_estimated(SR.k88) = mod_pm_pi(OF.Xest(9));
     SR.i_estimated(SR.k88) = mod_pm_pi(OF.Xest(11));
 
-    if SR.k88 > 500
+    if (SR.k88 - SR.beginingk88) > 350
             SR.imitJamAlert(SR.k88) = OF.ImitJamAlert;
             if (SR.ImitTime == -1) && (SR.imitJamAlert(SR.k88))
                 SR.ImitTime = SR.TimeOfWeek(SR.k88);
@@ -95,3 +92,32 @@
     else
         SR.imitJamAlert(SR.k88) = 0;
     end
+    
+else
+    SR.e_fsolved(SR.k88) = NaN;
+    SR.theta_fsolved(SR.k88) = NaN;
+    SR.omega_fsolved(SR.k88) = NaN;
+    SR.p_fsolved(SR.k88) = NaN;
+    SR.Omega_fsolved(SR.k88) = NaN;
+    SR.i_fsolved(SR.k88) = NaN;    
+
+    SR.e_estimated(SR.k88) = NaN;
+    SR.theta_estimated(SR.k88) = NaN;
+    SR.omega_estimated(SR.k88) = NaN;
+    SR.p_estimated(SR.k88) = NaN;
+    SR.Omega_estimated(SR.k88) = NaN;
+    SR.i_estimated(SR.k88) = NaN;
+    
+    SR.x_estimated(SR.k88) = NaN;
+    SR.y_estimated(SR.k88) = NaN;
+    SR.z_estimated(SR.k88) = NaN;
+    SR.Vx_estimated(SR.k88) = NaN;
+    SR.Vy_estimated(SR.k88) = NaN;
+    SR.Vz_estimated(SR.k88) = NaN;    
+    
+    SR.errXizmXpred(SR.k88) =  NaN;
+    SR.errXizmXest(SR.k88) =  NaN;
+    SR.errXizmXfsolve(SR.k88) =  NaN;    
+    
+    SR.imitJamAlert(SR.k88) = 0;
+end

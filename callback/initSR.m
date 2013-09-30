@@ -46,3 +46,6 @@ SR.doFastInit = 1;
 
 SR.BarrageTime = -1;
 SR.ImitTime = -1;
+
+SR.beginingTime = -1;
+SR.beginingk88 = -1;
